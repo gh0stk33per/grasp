@@ -13,11 +13,10 @@ services:
     volumes:
       # Development: mount source for live editing
       - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./pytest.ini:/app/pytest.ini:ro
     networks:
       - grasp-net
-    depends_on:
-      grasp-neo4j:
-        condition: service_healthy
     restart: unless-stopped
 
   grasp-neo4j:
