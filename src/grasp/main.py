@@ -2,11 +2,15 @@
 
 import logging
 from grasp.config import settings
+from grasp.utils.logging import configure_logging
 
 logger = logging.getLogger(__name__)
 
 
 def main():
+   
+    configure_logging(settings.log_level)
+    
     """Start the GRASP engine."""
     logger.info(
         "GRASP v%s starting - Graph-based Reconnaissance, Analysis, and Security Posture",
