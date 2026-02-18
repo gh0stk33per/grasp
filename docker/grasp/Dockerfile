@@ -27,4 +27,4 @@ USER grasp
 ENV PYTHONPATH=/app/src \
     PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["python", "-m", "grasp.main"]
+ENTRYPOINT ["uvicorn", "grasp.main:app", "--host", "0.0.0.0", "--port", "8443", "--reload", "--reload-dir", "/app/src"]

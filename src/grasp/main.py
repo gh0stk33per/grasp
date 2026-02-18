@@ -1,17 +1,22 @@
 """GRASP application entrypoint."""
 
 import logging
+from fastapi import FastAPI
 from grasp.config import settings
 from grasp.utils.logging import configure_logging
 
-logger = logging.getLogger(__name__)
+configure_logging(settings.log_level)
+logger = logging.getLogger("grasp")
+
+app = FastAPI(
+    title="GRASP",
+    description="Graph-based Reconnaissance, Analysis, and Security Posture",
+    version=settings.version,
+)
 
 
-def main():
-   
-    configure_logging(settings.log_level)
-    
-    """Start the GRASP engine."""
+@app.on_event("startup")
+async def startup():
     logger.info(
         "GRASP v%s starting - Graph-based Reconnaissance, Analysis, and Security Posture",
         settings.version,
@@ -21,5 +26,6 @@ def main():
     logger.info("Graph DB: %s", settings.graph_db_uri)
 
 
-if __name__ == "__main__":
-    main()
+@app.get("/health")
+async def health():
+    return {"status": "ok", "version": settings.version}

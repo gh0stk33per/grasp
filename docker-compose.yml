@@ -8,6 +8,8 @@ services:
       dockerfile: docker/grasp/Dockerfile
     container_name: grasp-engine
     env_file: .env
+    ports:
+      - "8443:8443"
     volumes:
       # Development: mount source for live editing
       - ./src:/app/src:ro
