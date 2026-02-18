@@ -1,0 +1,25 @@
+# GRASP Dependencies
+# Core API
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Graph Database
+neo4j==5.27.0
+
+# ML / Discovery Engine
+scikit-learn==1.6.1
+hdbscan==0.8.40
+scipy==1.15.1
+numpy==2.2.2
+pandas==2.2.3
+networkx==3.4.2
+
+# Search Index Client
+elasticsearch[async]==8.17.0
+
+# Data Validation
+pydantic==2.10.5
+pydantic-settings==2.7.1
+
+# Utilities
+python-dotenv==1.0.1

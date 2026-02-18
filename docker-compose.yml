@@ -1,0 +1,50 @@
+# GRASP - Graph-based Reconnaissance, Analysis, and Security Posture
+# Single-command deployment: docker compose up -d
+
+services:
+  grasp-engine:
+    build:
+      context: .
+      dockerfile: docker/grasp/Dockerfile
+    container_name: grasp-engine
+    env_file: .env
+    volumes:
+      # Development: mount source for live editing
+      - ./src:/app/src:ro
+    networks:
+      - grasp-net
+    depends_on:
+      grasp-neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+
+  grasp-neo4j:
+    image: neo4j:5.15-community
+    container_name: grasp-neo4j
+    environment:
+      - NEO4J_AUTH=${GRASP_GRAPH_DB_USER}/${GRASP_GRAPH_DB_PASSWORD}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+    volumes:
+      - grasp-neo4j-data:/data
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - grasp-net
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  grasp-neo4j-data:
+    driver: local
+
+networks:
+  grasp-net:
+    driver: bridge
