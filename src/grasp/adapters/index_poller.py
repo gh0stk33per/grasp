@@ -6,6 +6,9 @@ new events continuously using search_after pagination.
 
 No transformation, normalization, or enrichment. Raw documents are
 wrapped in RawEvent envelopes and delivered as-is.
+
+Supports both Elasticsearch 7.x (http_auth) client APIs.
+TLS with custom CA certificates for production deployments.
 """
 
 from __future__ import annotations
@@ -28,12 +31,13 @@ class IndexPollerAdapter(BaseAdapter):
 
     Required config keys:
         endpoint: str       - Elasticsearch URL (e.g. https://host:9200)
-        auth_user: str      - Username for authentication
-        auth_password: str  - Password for authentication
 
     Optional config keys:
+        auth_user: str      - Username for authentication
+        auth_password: str  - Password for authentication
         index_pattern: str  - Index pattern to query (default: '*')
         tls_verify: bool    - Verify TLS certificates (default: True)
+        ca_cert: str        - Path to CA certificate file
         poll_interval: int  - Seconds between poll cycles in stream mode (default: 5)
         batch_size: int     - Events per search request (default: 500)
     """
@@ -43,6 +47,7 @@ class IndexPollerAdapter(BaseAdapter):
         self._client: AsyncElasticsearch | None = None
         self._index_pattern = config.get("index_pattern", "*")
         self._tls_verify = config.get("tls_verify", True)
+        self._ca_cert = config.get("ca_cert", "")
         self._poll_interval = int(config.get("poll_interval", 5))
         self._batch_size = int(config.get("batch_size", 500))
         self._available_indices: list[str] = []
@@ -50,6 +55,19 @@ class IndexPollerAdapter(BaseAdapter):
     @property
     def adapter_type(self) -> str:
         return "search_index"
+
+    def _build_ssl_context(self) -> ssl.SSLContext:
+        """Build SSL context from configuration."""
+        if not self._tls_verify:
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            return ctx
+
+        if self._ca_cert:
+            return ssl.create_default_context(cafile=self._ca_cert)
+
+        return ssl.create_default_context()
 
     async def connect(self) -> ConnectionState:
         """Connect to Elasticsearch and discover available indices."""
@@ -61,19 +79,14 @@ class IndexPollerAdapter(BaseAdapter):
 
             client_kwargs: dict[str, Any] = {
                 "hosts": [endpoint],
+                "ssl_context": self._build_ssl_context(),
                 "request_timeout": 30,
                 "retry_on_timeout": True,
                 "max_retries": 3,
             }
 
             if auth_user and auth_password:
-                client_kwargs["basic_auth"] = (auth_user, auth_password)
-
-            if not self._tls_verify:
-                ctx = ssl.create_default_context()
-                ctx.check_hostname = False
-                ctx.verify_mode = ssl.CERT_NONE
-                client_kwargs["ssl_context"] = ctx
+                client_kwargs["http_auth"] = (auth_user, auth_password)
 
             self._client = AsyncElasticsearch(**client_kwargs)
 

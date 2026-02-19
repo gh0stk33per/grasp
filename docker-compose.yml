@@ -15,6 +15,7 @@ services:
       - ./src:/app/src:ro
       - ./tests:/app/tests:ro
       - ./pytest.ini:/app/pytest.ini:ro
+      - ./root-ca.pem:/app/certs/root-ca.pem:ro
     networks:
       - grasp-net
     restart: unless-stopped
