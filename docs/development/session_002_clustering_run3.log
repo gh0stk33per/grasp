@@ -1,0 +1,169 @@
+/usr/local/lib/python3.12/site-packages/sklearn/utils/deprecation.py:151: FutureWarning: 'force_all_finite' was renamed to 'ensure_all_finite' in 1.6 and will be removed in 1.8.
+  warnings.warn(
+/usr/local/lib/python3.12/site-packages/sklearn/utils/deprecation.py:151: FutureWarning: 'force_all_finite' was renamed to 'ensure_all_finite' in 1.6 and will be removed in 1.8.
+  warnings.warn(
+Clusters: 10  Noise: 50
+
+--- NOISE ---
+  _id                                                type=unknown         conf=0.00 entity=False
+  _index                                             type=fqdn            conf=0.50 entity=True
+  agent.name                                         type=unknown         conf=0.00 entity=False
+  data.file                                          type=unknown         conf=0.00 entity=False
+  data.sca.check.compliance.cis_csc_v7               type=fqdn            conf=0.50 entity=True
+  data.sca.check.compliance.cis_csc_v8               type=fqdn            conf=0.50 entity=True
+  data.sca.check.compliance.cmmc_v2.0                type=unknown         conf=0.00 entity=False
+  data.sca.check.description                         type=unknown         conf=0.00 entity=False
+  data.sca.check.rationale                           type=unknown         conf=0.00 entity=False
+  data.sca.check.registry.0                          type=unknown         conf=0.00 entity=False
+  data.sca.check.remediation                         type=unknown         conf=0.00 entity=False
+  data.sca.check.title                               type=unknown         conf=0.00 entity=False
+  data.sca.policy                                    type=unknown         conf=0.00 entity=False
+  data.title                                         type=unknown         conf=0.00 entity=False
+  data.version                                       type=fqdn            conf=0.50 entity=True
+  data.win.eventdata.newProcessName                  type=unknown         conf=0.00 entity=False
+  data.win.eventdata.parentProcessName               type=unknown         conf=0.00 entity=False
+  data.win.eventdata.subjectDomainName               type=unknown         conf=0.00 entity=False
+  data.win.eventdata.subjectUserName                 type=unknown         conf=0.00 entity=False
+  data.win.eventdata.subjectUserSid                  type=unknown         conf=0.00 entity=False
+  data.win.eventdata.targetDomainName                type=unknown         conf=0.00 entity=False
+  data.win.eventdata.targetUserName                  type=unknown         conf=0.00 entity=False
+  data.win.eventdata.targetUserSid                   type=unknown         conf=0.00 entity=False
+  data.win.eventdata.tokenElevationType              type=unknown         conf=0.00 entity=False
+  data.win.system.keywords                           type=unknown         conf=0.00 entity=False
+  data.win.system.message                            type=unknown         conf=0.00 entity=False
+  data.win.system.providerName                       type=unknown         conf=0.00 entity=False
+  data.win.system.severityValue                      type=unknown         conf=0.00 entity=False
+  full_log                                           type=unknown         conf=0.00 entity=False
+  id                                                 type=fqdn            conf=0.50 entity=True
+  input.type                                         type=unknown         conf=0.00 entity=False
+  manager.name                                       type=unknown         conf=0.00 entity=False
+  predecoder.timestamp                               type=unknown         conf=0.00 entity=False
+  rule.cis_csc_v7.0                                  type=fqdn            conf=0.50 entity=True
+  rule.cis_csc_v8.0                                  type=fqdn            conf=0.50 entity=True
+  rule.description                                   type=unknown         conf=0.00 entity=False
+  rule.gdpr.0                                        type=unknown         conf=0.00 entity=False
+  rule.gpg13.1                                       type=fqdn            conf=0.50 entity=True
+  rule.groups.2                                      type=unknown         conf=0.00 entity=False
+  rule.groups.3                                      type=unknown         conf=0.00 entity=False
+  rule.mail                                          type=unknown         conf=0.00 entity=False
+  rule.mitre.id.1                                    type=technique_id    conf=0.50 entity=True
+  rule.pci_dss.1                                     type=fqdn            conf=0.50 entity=True
+  syscheck.arch                                      type=unknown         conf=0.00 entity=False
+  syscheck.gid_after                                 type=unknown         conf=0.00 entity=False
+  syscheck.path                                      type=unknown         conf=0.00 entity=False
+  syscheck.perm_after                                type=unknown         conf=0.00 entity=False
+  syscheck.uid_after                                 type=unknown         conf=0.00 entity=False
+  syscheck.value_name                                type=unknown         conf=0.00 entity=False
+  syscheck.value_type                                type=unknown         conf=0.00 entity=False
+
+--- Cluster 0 ---
+  data.sca.scan_id                                   type=numeric         conf=1.00 entity=False
+  data.win.system.eventRecordID                      type=numeric         conf=1.00 entity=False
+  rule.id                                            type=numeric         conf=0.81 entity=False
+  syscheck.inode_after                               type=numeric         conf=1.00 entity=False
+  syscheck.inode_before                              type=numeric         conf=1.00 entity=False
+  syscheck.size_after                                type=numeric         conf=1.00 entity=False
+
+--- Cluster 1 ---
+  data.sca.check.id                                  type=port            conf=0.61 entity=True
+  data.win.system.eventID                            type=port            conf=1.00 entity=True
+  data.win.system.processID                          type=port            conf=1.00 entity=True
+  data.win.system.task                               type=port            conf=1.00 entity=True
+  data.win.system.threadID                           type=port            conf=1.00 entity=True
+  rule.firedtimes                                    type=numeric         conf=0.60 entity=False
+  syscheck.size_before                               type=port            conf=1.00 entity=True
+
+--- Cluster 2 ---
+  agent.id                                           type=numeric         conf=0.60 entity=False
+  data.win.eventdata.logonType                       type=numeric         conf=0.60 entity=False
+  data.win.system.level                              type=numeric         conf=0.60 entity=False
+  data.win.system.opcode                             type=numeric         conf=0.60 entity=False
+  data.win.system.version                            type=numeric         conf=0.60 entity=False
+  rule.level                                         type=numeric         conf=0.60 entity=False
+
+--- Cluster 3 ---
+  @timestamp                                         type=timestamp       conf=1.00 entity=False
+  data.win.system.systemTime                         type=timestamp       conf=1.00 entity=False
+  syscheck.mtime_after                               type=timestamp       conf=1.00 entity=False
+  syscheck.mtime_before                              type=timestamp       conf=1.00 entity=False
+  timestamp                                          type=timestamp       conf=1.00 entity=False
+
+--- Cluster 4 ---
+  data.sca.check.compliance.nist_sp_800-53           type=unknown         conf=1.00 entity=False
+  data.win.eventdata.mandatoryLabel                  type=unknown         conf=1.00 entity=False
+  data.win.system.providerGuid                       type=unknown         conf=1.00 entity=False
+  rule.nist_sp_800-53.0                              type=unknown         conf=1.00 entity=False
+  rule.nist_sp_800-53.1                              type=unknown         conf=1.00 entity=False
+
+--- Cluster 5 ---
+  data.win.system.computer                           type=fqdn            conf=0.40 entity=True
+  rule.nist_800_53.0                                 type=fqdn            conf=0.40 entity=True
+  rule.nist_800_53.1                                 type=fqdn            conf=0.40 entity=True
+  rule.tsc.0                                         type=fqdn            conf=0.50 entity=True
+  rule.tsc.1                                         type=fqdn            conf=0.50 entity=True
+  rule.tsc.2                                         type=fqdn            conf=0.50 entity=True
+  rule.tsc.3                                         type=fqdn            conf=0.50 entity=True
+  rule.tsc.4                                         type=fqdn            conf=0.50 entity=True
+  rule.tsc.5                                         type=fqdn            conf=0.50 entity=True
+
+--- Cluster 6 ---
+  syscheck.md5_after                                 type=hash_md5        conf=1.00 entity=True
+  syscheck.md5_before                                type=hash_md5        conf=1.00 entity=True
+  syscheck.sha1_after                                type=hash_sha1       conf=0.60 entity=True
+  syscheck.sha1_before                               type=hash_sha1       conf=0.60 entity=True
+  syscheck.sha256_after                              type=hash_sha256     conf=0.60 entity=True
+  syscheck.sha256_before                             type=hash_sha256     conf=0.60 entity=True
+
+--- Cluster 7 ---
+  data.arch                                          type=unknown         conf=1.00 entity=False
+  data.dpkg_status                                   type=unknown         conf=0.79 entity=False
+  data.dstuser                                       type=unknown         conf=0.84 entity=False
+  data.extra_data                                    type=unknown         conf=1.00 entity=False
+  data.package                                       type=unknown         conf=0.73 entity=False
+  data.sca.check.result                              type=unknown         conf=0.67 entity=False
+  data.sca.type                                      type=unknown         conf=1.00 entity=False
+  data.srcuser                                       type=unknown         conf=0.94 entity=False
+  data.win.eventdata.newProcessId                    type=unknown         conf=0.89 entity=False
+  data.win.eventdata.processId                       type=unknown         conf=0.98 entity=False
+  data.win.eventdata.subjectLogonId                  type=unknown         conf=1.00 entity=False
+  data.win.eventdata.targetLogonId                   type=unknown         conf=0.89 entity=False
+  data.win.system.channel                            type=unknown         conf=1.00 entity=False
+  decoder.name                                       type=unknown         conf=0.68 entity=False
+  decoder.parent                                     type=unknown         conf=1.00 entity=False
+  location                                           type=unknown         conf=0.68 entity=False
+  predecoder.hostname                                type=unknown         conf=1.00 entity=False
+  predecoder.program_name                            type=unknown         conf=1.00 entity=False
+  rule.groups.0                                      type=unknown         conf=0.68 entity=False
+  rule.groups.1                                      type=unknown         conf=0.68 entity=False
+  rule.mitre.tactic.0                                type=unknown         conf=1.00 entity=False
+  rule.mitre.tactic.1                                type=unknown         conf=1.00 entity=False
+  rule.mitre.tactic.2                                type=unknown         conf=0.67 entity=False
+  rule.mitre.tactic.3                                type=unknown         conf=0.67 entity=False
+  rule.mitre.technique.0                             type=unknown         conf=1.00 entity=False
+  rule.mitre.technique.1                             type=unknown         conf=1.00 entity=False
+  syscheck.changed_attributes.0                      type=unknown         conf=1.00 entity=False
+  syscheck.changed_attributes.1                      type=unknown         conf=1.00 entity=False
+  syscheck.changed_attributes.2                      type=unknown         conf=1.00 entity=False
+  syscheck.changed_attributes.3                      type=unknown         conf=1.00 entity=False
+  syscheck.changed_attributes.4                      type=unknown         conf=1.00 entity=False
+  syscheck.event                                     type=unknown         conf=1.00 entity=False
+  syscheck.gname_after                               type=unknown         conf=0.86 entity=False
+  syscheck.mode                                      type=unknown         conf=1.00 entity=False
+  syscheck.uname_after                               type=unknown         conf=0.86 entity=False
+
+--- Cluster 8 ---
+  agent.ip                                           type=ip_address      conf=0.50 entity=True
+  rule.gpg13.0                                       type=fqdn            conf=0.50 entity=True
+  rule.hipaa.0                                       type=fqdn            conf=0.50 entity=True
+  rule.hipaa.1                                       type=fqdn            conf=0.50 entity=True
+  rule.mitre.id.0                                    type=technique_id    conf=0.44 entity=True
+  rule.pci_dss.0                                     type=fqdn            conf=0.50 entity=True
+
+--- Cluster 9 ---
+  data.sca.check.compliance.cis                      type=ip_address      conf=0.50 entity=True
+  data.sca.check.compliance.iso_27001-2013           type=fqdn            conf=0.50 entity=True
+  data.sca.check.compliance.pci_dss_v3.2.1           type=unknown         conf=1.00 entity=False
+  data.sca.check.compliance.pci_dss_v4.0             type=unknown         conf=1.00 entity=False
+  rule.cis.0                                         type=ip_address      conf=0.50 entity=True
+  rule.iso_27001-2013.0                              type=fqdn            conf=0.50 entity=True
+
