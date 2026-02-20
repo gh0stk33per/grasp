@@ -1,41 +1,7 @@
-2026-02-20 04:07:59,474 INFO grasp.config: Discovered source [source_1]: type=search_index endpoint=https://10.90.0.10:9200
-Using source: source_1
-2026-02-20 04:07:59,543 INFO elasticsearch: GET https://10.90.0.10:9200/ [status:200 request:0.065s]
-2026-02-20 04:07:59,543 INFO grasp.adapters.index_poller: Connected to Elasticsearch 7.10.2 at https://10.90.0.10:9200
-2026-02-20 04:07:59,699 INFO elasticsearch: GET https://10.90.0.10:9200/wazuh-alerts-4.x-*?expand_wildcards=open [status:200 request:0.156s]
-2026-02-20 04:07:59,744 INFO grasp.adapters.index_poller: Discovered 8 indices: ['wazuh-alerts-4.x-2026.01.06', 'wazuh-alerts-4.x-2026.01.07', 'wazuh-alerts-4.x-2026.01.08', 'wazuh-alerts-4.x-2026.01.09', 'wazuh-alerts-4.x-2026.01.10', 'wazuh-alerts-4.x-2026.01.11', 'wazuh-alerts-4.x-2026.01.12', 'wazuh-alerts-4.x-2026.01.13']
-2026-02-20 04:07:59,757 INFO grasp.adapters.index_poller: Index Poller [source_1] connected: 8 indices match pattern 'wazuh-alerts-4.x-*'
-2026-02-20 04:07:59,903 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.145s]
-2026-02-20 04:08:00,158 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.224s]
-2026-02-20 04:08:00,397 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.167s]
-2026-02-20 04:08:00,721 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.245s]
-2026-02-20 04:08:01,074 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.269s]
-2026-02-20 04:08:01,338 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.217s]
-2026-02-20 04:08:01,575 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.211s]
-2026-02-20 04:08:01,814 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.194s]
-2026-02-20 04:08:02,016 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.166s]
-2026-02-20 04:08:02,269 INFO elasticsearch: POST https://10.90.0.10:9200/wazuh-alerts-4.x-*/_search [status:200 request:0.188s]
-2026-02-20 04:08:02,297 INFO grasp.adapters.index_poller: Sampled 5000 events from [source_1] pattern 'wazuh-alerts-4.x-*'
-2026-02-20 04:08:02,300 INFO grasp.discovery.profile: Starting discovery for source [source_1]: 5000 events
-2026-02-20 04:08:02,300 INFO grasp.discovery.profile: Stage 1: Flattening events and collecting field values
-2026-02-20 04:08:03,863 INFO grasp.discovery.profile: Discovered 573 unique field paths
-2026-02-20 04:08:03,874 INFO grasp.discovery.profile: Stage 2: Extracting feature vectors
-2026-02-20 04:08:11,686 INFO grasp.discovery.profile: Extracted features for 573 fields
-2026-02-20 04:08:11,686 INFO grasp.discovery.profile: Stage 3: Clustering fields by feature similarity
 /usr/local/lib/python3.12/site-packages/sklearn/utils/deprecation.py:151: FutureWarning: 'force_all_finite' was renamed to 'ensure_all_finite' in 1.6 and will be removed in 1.8.
   warnings.warn(
 /usr/local/lib/python3.12/site-packages/sklearn/utils/deprecation.py:151: FutureWarning: 'force_all_finite' was renamed to 'ensure_all_finite' in 1.6 and will be removed in 1.8.
   warnings.warn(
-2026-02-20 04:08:11,840 INFO grasp.discovery.clustering: HDBSCAN: 36 clusters, 107 noise from 573 fields
-2026-02-20 04:08:11,904 INFO grasp.discovery.clustering: Classification complete: 202 entities, 7 temporal, 64 metric, 271 enum, 6 text, 23 unknown
-2026-02-20 04:08:11,921 INFO grasp.discovery.profile: Clustering complete: 36 clusters, 107 noise
-2026-02-20 04:08:11,922 INFO grasp.discovery.profile: Stage 4: Analyzing entity co-occurrence
-2026-02-20 04:09:15,781 INFO grasp.discovery.relationships: Found 78 relationships from 20301 entity field pairs
-2026-02-20 04:09:15,799 INFO grasp.discovery.profile: Discovered 78 relationships
-2026-02-20 04:09:15,800 INFO grasp.discovery.profile: Stage 5: Assembling Source Profile
-2026-02-20 04:09:15,823 INFO grasp.discovery.profile: Source Profile assembled for [source_1] rev 1: 573 fields (202 entities), 78 relationships
-2026-02-20 04:09:15,825 INFO grasp.discovery.profile: Classification breakdown: entity=202, enum=271, metric=64, temporal=7, text=6, unknown=23
-
 === CLASSIFICATION SUMMARY ===
   entity        202
   enum          271
@@ -44,224 +10,66 @@ Using source: source_1
   text            6
   unknown        23
 
-=== ENTITIES FOUND ===
-  syscheck.path                                      hint=none         conf=0.50
+=== ENTITIES WITH HINTS (type-detected) ===
   syscheck.sha1_after                                hint=hash_sha1    conf=1.00
   syscheck.md5_after                                 hint=hash_md5     conf=1.00
   syscheck.sha256_after                              hint=hash_sha256  conf=1.00
-  full_log                                           hint=none         conf=0.50
-  _id                                                hint=none         conf=0.50
-  predecoder.timestamp                               hint=none         conf=0.48
-  data.win.eventdata.targetLogonId                   hint=none         conf=0.50
-  data.file                                          hint=none         conf=0.97
-  data.win.eventdata.logonGuid                       hint=none         conf=0.88
-  data.win.eventdata.processId                       hint=none         conf=0.95
-  data.win.eventdata.newProcessId                    hint=none         conf=0.50
-  data.win.eventdata.data                            hint=none         conf=0.50
-  data.win.eventdata.binary                          hint=none         conf=0.50
   syscheck.md5_before                                hint=hash_md5     conf=1.00
   syscheck.sha256_before                             hint=hash_sha256  conf=1.00
   syscheck.sha1_before                               hint=hash_sha1    conf=1.00
-  syscheck.value_name                                hint=none         conf=0.50
-  data.sca.file                                      hint=none         conf=0.50
-  data.sca.policy_id                                 hint=none         conf=0.50
-  syscheck.win_perm_after.1.allowed.11               hint=none         conf=1.00
-  syscheck.win_perm_after.2.allowed.3                hint=none         conf=1.00
-  syscheck.win_perm_after.2.allowed.11               hint=none         conf=1.00
-  syscheck.win_perm_after.3.name                     hint=none         conf=0.92
-  syscheck.win_perm_after.4.allowed.1                hint=none         conf=1.00
-  syscheck.win_perm_after.4.allowed.2                hint=none         conf=0.86
-  syscheck.win_perm_after.4.allowed.3                hint=none         conf=1.00
-  syscheck.win_perm_after.4.allowed.4                hint=none         conf=1.00
-  syscheck.win_perm_after.4.name                     hint=none         conf=0.72
-  syscheck.win_perm_after.5.allowed.7                hint=none         conf=0.50
-  syscheck.win_perm_after.5.allowed.8                hint=none         conf=0.50
-  syscheck.win_perm_after.5.allowed.9                hint=none         conf=0.50
-  syscheck.win_perm_after.5.name                     hint=none         conf=0.72
-  syscheck.win_perm_after.6.name                     hint=none         conf=1.00
-  syscheck.win_perm_after.7.allowed.0                hint=none         conf=1.00
-  syscheck.win_perm_after.7.name                     hint=none         conf=1.00
-  syscheck.win_perm_after.8.allowed.0                hint=none         conf=1.00
-  syscheck.win_perm_after.8.name                     hint=none         conf=1.00
   data.sca.check.references                          hint=url          conf=0.50
-  data.sca.check.compliance.pci_dss_v4.0             hint=none         conf=0.50
-  data.sca.check.compliance.cis                      hint=none         conf=0.50
-  data.sca.check.compliance.cmmc_v2.0                hint=none         conf=0.50
-  data.sca.check.compliance.cis_csc_v7               hint=none         conf=0.95
-  data.sca.check.command.0                           hint=none         conf=0.50
-  rule.cis.0                                         hint=none         conf=0.50
-  data.extra_data                                    hint=none         conf=0.89
-  rule.nist_800_53.2                                 hint=none         conf=0.50
-  data.sca.check.compliance.iso_27001-2013           hint=none         conf=0.83
-  data.win.eventdata.ipAddress                       hint=none         conf=0.52
-  data.win.eventdata.requestTicketHash               hint=none         conf=0.50
-  data.win.eventdata.responseTicketHash              hint=none         conf=0.50
-  data.win.eventdata.status                          hint=none         conf=1.00
-  data.package                                       hint=none         conf=0.50
-  data.version                                       hint=none         conf=0.70
-  data.sca.check.registry.0                          hint=none         conf=0.50
-  syscheck.win_perm_after.3.allowed.5                hint=none         conf=1.00
-  syscheck.win_perm_after.3.allowed.6                hint=none         conf=1.00
-  syscheck.win_perm_after.3.allowed.7                hint=none         conf=1.00
-  syscheck.win_perm_after.6.allowed.2                hint=none         conf=0.66
-  syscheck.win_perm_after.9.name                     hint=none         conf=1.00
-  syscheck.win_perm_after.10.name                    hint=none         conf=1.00
-  syscheck.win_perm_after.11.name                    hint=none         conf=0.50
-  syscheck.win_perm_after.12.allowed.0               hint=none         conf=1.00
-  syscheck.win_perm_after.12.name                    hint=none         conf=1.00
-  data.sca.check.compliance.pci_dss_v3.2.1           hint=none         conf=0.50
-  data.tty                                           hint=none         conf=0.50
-  data.pwd                                           hint=none         conf=1.00
-  data.command                                       hint=none         conf=0.95
-  data.sca.check.compliance.nist_sp_800-53           hint=none         conf=0.99
-  rule.nist_sp_800-53.0                              hint=none         conf=1.00
-  rule.nist_sp_800-53.1                              hint=none         conf=1.00
-  data.sca.check.compliance.hipaa                    hint=none         conf=0.50
-  rule.nist_sp_800-53.2                              hint=none         conf=1.00
-  rule.iso_27001-2013.1                              hint=none         conf=0.99
-  syscheck.diff                                      hint=none         conf=0.50
-  rule.nist_sp_800-53.3                              hint=none         conf=1.00
-  syscheck.win_perm_after.7.allowed.6                hint=none         conf=1.00
-  syscheck.win_perm_after.7.allowed.7                hint=none         conf=1.00
-  syscheck.win_perm_after.7.allowed.8                hint=none         conf=0.90
-  syscheck.win_perm_after.7.allowed.9                hint=none         conf=1.00
-  syscheck.win_perm_after.8.allowed.6                hint=none         conf=1.00
-  syscheck.win_perm_after.8.allowed.7                hint=none         conf=1.00
-  syscheck.win_perm_after.8.allowed.8                hint=none         conf=0.90
-  syscheck.win_perm_after.8.allowed.9                hint=none         conf=1.00
-  syscheck.win_perm_after.12.allowed.4               hint=none         conf=1.00
-  syscheck.win_perm_after.12.allowed.5               hint=none         conf=0.90
-  syscheck.win_perm_after.12.allowed.6               hint=none         conf=1.00
-  syscheck.win_perm_after.12.allowed.7               hint=none         conf=1.00
-  syscheck.win_perm_after.12.allowed.8               hint=none         conf=0.90
-  syscheck.win_perm_after.12.allowed.9               hint=none         conf=1.00
-  data.sca.check.compliance.pci_dss                  hint=none         conf=1.00
-  data.sca.check.compliance.cis_csc                  hint=none         conf=0.94
-  data.sca.check.compliance.nist_800_53              hint=none         conf=1.00
-  syscheck.win_perm_after.0.allowed.10               hint=none         conf=1.00
-  data.win.eventdata.opCorrelationID                 hint=none         conf=0.85
-  previous_output                                    hint=none         conf=0.50
-  previous_log                                       hint=none         conf=0.50
-  data.logname                                       hint=none         conf=0.77
-  rule.nist_sp_800-53.4                              hint=none         conf=0.88
-  rule.nist_sp_800-53.5                              hint=none         conf=1.00
-  syscheck.win_perm_after.9.allowed.4                hint=none         conf=1.00
-  syscheck.win_perm_after.9.allowed.5                hint=none         conf=0.00
-  syscheck.win_perm_after.9.allowed.6                hint=none         conf=1.00
-  syscheck.win_perm_after.9.allowed.7                hint=none         conf=1.00
-  syscheck.win_perm_after.9.allowed.8                hint=none         conf=1.00
-  syscheck.win_perm_after.10.allowed.4               hint=none         conf=1.00
-  syscheck.win_perm_after.11.allowed.4               hint=none         conf=1.00
-  syscheck.win_perm_after.11.allowed.5               hint=none         conf=0.00
-  syscheck.win_perm_after.11.allowed.6               hint=none         conf=1.00
-  syscheck.win_perm_after.11.allowed.7               hint=none         conf=1.00
-  syscheck.win_perm_after.11.allowed.8               hint=none         conf=1.00
-  syscheck.win_perm_after.13.allowed.4               hint=none         conf=1.00
-  rule.mitre_techniques.1                            hint=none         conf=0.47
-  rule.mitre_techniques.2                            hint=none         conf=0.30
-  rule.mitre_techniques.3                            hint=none         conf=0.44
-  rule.mitre_techniques.4                            hint=none         conf=0.44
-  rule.mitre_techniques.5                            hint=none         conf=1.00
-  rule.mitre_techniques.6                            hint=none         conf=1.00
-  rule.mitre_techniques.7                            hint=none         conf=1.00
-  rule.mitre_techniques.8                            hint=none         conf=0.91
-  rule.mitre_techniques.9                            hint=none         conf=1.00
-  rule.mitre_techniques.10                           hint=none         conf=0.74
-  rule.mitre_techniques.11                           hint=none         conf=0.78
-  rule.mitre_techniques.12                           hint=none         conf=0.43
-  rule.mitre_techniques.13                           hint=none         conf=1.00
-  rule.mitre_techniques.14                           hint=none         conf=0.50
-  rule.mitre_techniques.15                           hint=none         conf=0.78
-  rule.mitre_techniques.16                           hint=none         conf=1.00
-  rule.mitre_techniques.17                           hint=none         conf=1.00
-  rule.mitre_techniques.18                           hint=none         conf=1.00
-  rule.mitre_techniques.19                           hint=none         conf=1.00
-  rule.mitre_techniques.20                           hint=none         conf=0.74
-  rule.mitre_techniques.21                           hint=none         conf=1.00
-  rule.mitre_techniques.22                           hint=none         conf=1.00
-  rule.mitre_techniques.23                           hint=none         conf=0.68
-  rule.mitre_techniques.24                           hint=none         conf=1.00
-  rule.mitre_techniques.25                           hint=none         conf=1.00
-  rule.mitre_techniques.26                           hint=none         conf=1.00
-  rule.mitre_techniques.27                           hint=none         conf=0.28
-  rule.mitre_techniques.28                           hint=none         conf=1.00
-  rule.mitre_techniques.29                           hint=none         conf=0.43
-  rule.mitre_techniques.30                           hint=none         conf=0.28
-  rule.mitre_techniques.31                           hint=none         conf=0.37
-  rule.mitre_techniques.32                           hint=none         conf=0.28
-  rule.mitre_techniques.33                           hint=none         conf=0.54
-  rule.mitre_techniques.34                           hint=none         conf=0.67
-  rule.mitre_techniques.35                           hint=none         conf=0.67
-  rule.mitre_techniques.36                           hint=none         conf=0.96
-  rule.mitre_techniques.37                           hint=none         conf=0.48
-  rule.mitre_techniques.38                           hint=none         conf=0.56
-  rule.mitre_techniques.39                           hint=none         conf=0.56
-  rule.mitre_techniques.40                           hint=none         conf=1.00
-  rule.mitre_techniques.41                           hint=none         conf=1.00
-  rule.mitre_techniques.42                           hint=none         conf=1.00
-  rule.mitre_techniques.43                           hint=none         conf=1.00
-  rule.mitre_techniques.44                           hint=none         conf=1.00
-  rule.mitre_techniques.45                           hint=none         conf=0.48
-  rule.mitre_techniques.46                           hint=none         conf=0.49
-  rule.mitre_techniques.47                           hint=none         conf=0.49
-  rule.mitre_techniques.48                           hint=none         conf=1.00
-  rule.mitre_techniques.49                           hint=none         conf=0.49
-  rule.mitre_techniques.50                           hint=none         conf=0.48
-  rule.mitre_techniques.51                           hint=none         conf=1.00
-  rule.mitre_techniques.52                           hint=none         conf=1.00
-  rule.mitre_techniques.53                           hint=none         conf=0.49
-  rule.mitre_techniques.54                           hint=none         conf=0.48
-  rule.mitre_techniques.55                           hint=none         conf=1.00
-  rule.mitre_techniques.56                           hint=none         conf=1.00
-  rule.mitre_techniques.57                           hint=none         conf=1.00
-  rule.mitre_techniques.58                           hint=none         conf=0.95
-  rule.mitre_techniques.59                           hint=none         conf=0.48
-  data.sca.check.reason                              hint=none         conf=0.50
-  data.sca.check.file.0                              hint=none         conf=1.00
-  data.sca.check.registry.1                          hint=none         conf=0.50
-  data.sca.check.command.1                           hint=none         conf=0.50
-  data.origin.module                                 hint=none         conf=0.88
   data.parameters.program                            hint=fqdn         conf=0.83
-  rule.iso_27001-2013.3                              hint=none         conf=1.00
-  data.sca.check.directory.0                         hint=none         conf=1.00
-  rule.mitre_techniques.87                           hint=none         conf=1.00
-  rule.mitre_techniques.88                           hint=none         conf=1.00
-  rule.mitre_techniques.89                           hint=none         conf=1.00
-  rule.mitre_techniques.90                           hint=none         conf=1.00
-  rule.mitre_techniques.91                           hint=none         conf=1.00
-  rule.mitre_techniques.92                           hint=none         conf=1.00
-  rule.mitre_techniques.93                           hint=none         conf=1.00
-  rule.mitre_techniques.94                           hint=none         conf=1.00
-  rule.mitre_techniques.95                           hint=none         conf=1.00
-  rule.mitre_techniques.96                           hint=none         conf=1.00
-  rule.mitre_techniques.97                           hint=none         conf=1.00
-  rule.mitre_techniques.98                           hint=none         conf=1.00
-  data.url                                           hint=none         conf=0.93
-  data.win.eventdata.classId                         hint=none         conf=0.76
-  data.win.eventdata.vendorIds                       hint=none         conf=0.50
-  data.win.eventdata.deviceId                        hint=none         conf=0.76
-  data.sca.check.file.1                              hint=none         conf=1.00
-  data.sca.check.file.2                              hint=none         conf=1.00
-  data.win.eventdata.preAuthEncryptionType           hint=none         conf=0.50
-  data.sca.check.compliance.tsc                      hint=none         conf=0.50
-  rule.tsc.7                                         hint=none         conf=0.50
-  rule.pci_dss.2                                     hint=none         conf=1.00
-  data.sca.check.command.2                           hint=none         conf=0.88
+
+=== ENTITIES WITHOUT HINTS (top 30) ===
+  syscheck.path                                      samples=['/usr/bin/gdbus', '/usr/sbin/umount.udisks2', 'HKEY_LOCAL_M
+  full_log                                           samples=['2026-01-07 06:57:26 status installed libc-bin:amd64 2.39-0
+  _id                                                samples=['nINBmpsBeVKHPCl0WvZ1', 'kyd4qZsBxRbWJTUovZZ6', '7C27tpsBy3
+  predecoder.timestamp                               samples=['Jan 13 09:22:35', 'Jan 12 05:01:01', 'Jan 11 10:50:49']
+  data.win.eventdata.targetLogonId                   samples=['0x2bdcf3d', '0x4ec9085', '0x40574a9']
+  data.file                                          samples=['/var/www/html/chat/post.php', '/tmp/favicons/browserconfig
+  data.win.eventdata.logonGuid                       samples=['{a01c11c2-ed50-e088-523e-20f767e2075b}', '{cb30044b-3194-4
+  data.win.eventdata.processId                       samples=['0x1684', '0x1aac', '0x12e4']
+  data.win.eventdata.newProcessId                    samples=['0x184c', '0x1eb0', '0x6d0']
+  data.win.eventdata.data                            samples=['certsrv.exe, 3760,D,50, 1, C:\\\\Windows\\\\system32\\\\Ce
+  data.win.eventdata.binary                          samples=['5E0000C0', '7B39333632383441432D433331392D344335422D423830
+  syscheck.value_name                                samples=['LeaseObtainedTime', 'Microsoft.Windows.ShellExperienceHost
+  data.sca.file                                      samples=['cis_win2019.yml"', 'cis_alma_linux_8.yml']
+  data.sca.policy_id                                 samples=['cis_alma_linux_8', 'cis_win2019']
+  syscheck.win_perm_after.1.allowed.11               samples=['WRITE_EA']
+  syscheck.win_perm_after.2.allowed.3                samples=['READ_CONTROL', 'WRITE_OWNER', 'DELETE']
+  syscheck.win_perm_after.2.allowed.11               samples=['WRITE_EA']
+  syscheck.win_perm_after.3.name                     samples=['INTERACTIVE', 'Backup Operators', 'CREATOR OWNER']
+  syscheck.win_perm_after.4.allowed.1                samples=['READ_CONTROL', 'DELETE', 'WRITE_DATA']
+  syscheck.win_perm_after.4.allowed.2                samples=['READ_CONTROL', 'READ_EA', 'DELETE']
+  syscheck.win_perm_after.4.allowed.3                samples=['READ_CONTROL', 'WRITE_OWNER', 'READ_EA']
+  syscheck.win_perm_after.4.allowed.4                samples=['WRITE_DATA', 'WRITE_EA', 'READ_DATA']
+  syscheck.win_perm_after.4.name                     samples=['RESTRICTED', 'CREATOR OWNER', 'Server Operators']
+  syscheck.win_perm_after.5.allowed.7                samples=['READ_EA', 'APPEND_DATA']
+  syscheck.win_perm_after.5.allowed.8                samples=['READ_EA', 'WRITE_EA']
+  syscheck.win_perm_after.5.allowed.9                samples=['EXECUTE', 'WRITE_EA']
+  syscheck.win_perm_after.5.name                     samples=['CREATOR OWNER', 'ALL APPLICATION PACKAGES', 'S-1-5-21-4847
+  syscheck.win_perm_after.6.name                     samples=['S-1-5-80-3169285310-278349998-1452333686-3865143136-421222
+  syscheck.win_perm_after.7.allowed.0                samples=['WRITE_DATA', 'READ_CONTROL', 'GENERIC_READ']
+  syscheck.win_perm_after.7.name                     samples=['S-1-5-21-484763869-1715567821-682003330-18975', 'S-1-15-3-
 
 === RELATIONSHIPS (78) ===
-  full_log --[CO_OCCURS_WITH]--> predecoder.timestamp
-  data.sca.check.compliance.cis --[CO_OCCURS_WITH]--> rule.cis.0
-  data.win.eventdata.processId --[CO_OCCURS_WITH]--> data.win.eventdata.newProcessId
-  data.sca.check.compliance.cis_csc_v7 --[CO_OCCURS_WITH]--> data.sca.check.compliance.iso_27001-2013
-  data.package --[CO_OCCURS_WITH]--> data.version
-  syscheck.sha1_after --[CO_OCCURS_WITH]--> syscheck.md5_after
-  syscheck.sha1_after --[CO_OCCURS_WITH]--> syscheck.sha256_after
-  syscheck.md5_after --[CO_OCCURS_WITH]--> syscheck.sha256_after
-  data.sca.check.compliance.pci_dss_v4.0 --[CO_OCCURS_WITH]--> data.sca.check.compliance.cmmc_v2.0
-  data.sca.check.compliance.cis --[CO_OCCURS_WITH]--> data.sca.check.compliance.cis_csc_v7
-  data.sca.check.compliance.cis_csc_v7 --[CO_OCCURS_WITH]--> rule.cis.0
-  data.sca.check.compliance.nist_sp_800-53 --[CO_OCCURS_WITH]--> rule.nist_sp_800-53.0
-  data.sca.check.compliance.cis_csc_v7 --[CO_OCCURS_WITH]--> data.sca.check.compliance.pci_dss_v3.2.1
-  data.sca.check.compliance.cmmc_v2.0 --[CO_OCCURS_WITH]--> data.sca.check.compliance.cis_csc_v7
-  data.sca.check.compliance.cmmc_v2.0 --[CO_OCCURS_WITH]--> data.sca.check.compliance.iso_27001-2013
-2026-02-20 04:09:15,852 INFO grasp.adapters.index_poller: Index Poller [source_1] disconnected
+  full_log                                 --[CO_OCCURS_WITH ]--> predecoder.timestamp                     (MI=0.485)
+  data.sca.check.compliance.cis            --[CO_OCCURS_WITH ]--> rule.cis.0                               (MI=0.409)
+  data.win.eventdata.processId             --[CO_OCCURS_WITH ]--> data.win.eventdata.newProcessId          (MI=0.361)
+  data.sca.check.compliance.cis_csc_v7     --[CO_OCCURS_WITH ]--> data.sca.check.compliance.iso_27001-2013 (MI=0.279)
+  data.package                             --[CO_OCCURS_WITH ]--> data.version                             (MI=0.275)
+  syscheck.sha1_after                      --[CO_OCCURS_WITH ]--> syscheck.md5_after                       (MI=0.265)
+  syscheck.sha1_after                      --[CO_OCCURS_WITH ]--> syscheck.sha256_after                    (MI=0.265)
+  syscheck.md5_after                       --[CO_OCCURS_WITH ]--> syscheck.sha256_after                    (MI=0.265)
+  data.sca.check.compliance.pci_dss_v4.0   --[CO_OCCURS_WITH ]--> data.sca.check.compliance.cmmc_v2.0      (MI=0.256)
+  data.sca.check.compliance.cis            --[CO_OCCURS_WITH ]--> data.sca.check.compliance.cis_csc_v7     (MI=0.250)
+  data.sca.check.compliance.cis_csc_v7     --[CO_OCCURS_WITH ]--> rule.cis.0                               (MI=0.250)
+  data.sca.check.compliance.nist_sp_800-53 --[CO_OCCURS_WITH ]--> rule.nist_sp_800-53.0                    (MI=0.249)
+  data.sca.check.compliance.cis_csc_v7     --[CO_OCCURS_WITH ]--> data.sca.check.compliance.pci_dss_v3.2.1 (MI=0.248)
+  data.sca.check.compliance.cmmc_v2.0      --[CO_OCCURS_WITH ]--> data.sca.check.compliance.cis_csc_v7     (MI=0.237)
+  data.sca.check.compliance.cmmc_v2.0      --[CO_OCCURS_WITH ]--> data.sca.check.compliance.iso_27001-2013 (MI=0.229)
+  data.sca.check.compliance.cis            --[CO_OCCURS_WITH ]--> data.sca.check.compliance.iso_27001-2013 (MI=0.226)
+  rule.cis.0                               --[CO_OCCURS_WITH ]--> data.sca.check.compliance.iso_27001-2013 (MI=0.226)
+  data.sca.check.compliance.pci_dss_v4.0   --[CO_OCCURS_WITH ]--> data.sca.check.compliance.pci_dss_v3.2.1 (MI=0.223)
+  data.sca.check.compliance.iso_27001-2013 --[CO_OCCURS_WITH ]--> data.sca.check.compliance.pci_dss_v3.2.1 (MI=0.223)
+  data.sca.check.compliance.pci_dss_v4.0   --[CO_OCCURS_WITH ]--> data.sca.check.compliance.cis_csc_v7     (MI=0.222)
