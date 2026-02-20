@@ -38,3 +38,5 @@ models/*.joblib
 .pytest_cache/
 .coverage
 htmlcov/
+
+*.BIN
