@@ -5,9 +5,9 @@ SampleBatch from an adapter and drives it through the full discovery
 sequence: flatten -> extract features -> cluster -> label -> analyze
 co-occurrence -> assemble Source Profile.
 
-The assembled Source Profile is the output of the discovery engine
-and the input to the graph engine. It represents everything GRASP
-has learned about a data source from unsupervised analysis.
+Updated for simplified classification model:
+- FieldClass (entity, temporal, metric, enum, text, unknown)
+- TypeHint (optional format hints like ipv4, hash, fqdn)
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from grasp.discovery.features import (
 from grasp.discovery.relationships import analyze_co_occurrence
 from grasp.models.events import SampleBatch
 from grasp.models.source_profile import (
-    EntityType,
+    FieldClass,
     FieldProfile,
     SourceProfile,
 )
@@ -118,7 +118,8 @@ async def build_source_profile(
             sample_count=feat.sample_count,
             null_count=feat.null_count,
             unique_count=feat.unique_count,
-            entity_type=cr.entity_type if cr else EntityType.UNKNOWN,
+            field_class=cr.field_class if cr else FieldClass.UNKNOWN,
+            type_hint=cr.type_hint if cr else None,
             confidence=cr.confidence if cr else 0.0,
             cluster_id=cr.cluster_id if cr else -1,
             feature_vector=feat.vector,
@@ -164,6 +165,13 @@ async def build_source_profile(
         len(profile.fields),
         entity_count,
         len(profile.relationships),
+    )
+    
+    # Log classification breakdown
+    summary = profile.classification_summary
+    logger.info(
+        "Classification breakdown: %s",
+        ", ".join(f"{k}={v}" for k, v in sorted(summary.items()))
     )
 
     return profile

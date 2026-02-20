@@ -1,15 +1,13 @@
-"""Source Profile data model.
+"""Source Profile data model - Simplified Classification.
 
 The Source Profile is the central data contract in GRASP. The discovery
 engine produces it, the graph engine consumes it, and the API exposes it.
-It represents everything GRASP has learned about a data source through
-unsupervised analysis -- field types, entity classifications, relationship
-patterns, and confidence scores.
 
-A Source Profile is living metadata. It refines continuously as GRASP
-processes more events, adjusting confidence scores and discovering new
-patterns. It is versioned and immutable per revision -- updates produce
-new revisions, never in-place mutations.
+SIMPLIFIED MODEL:
+- FieldClass replaces EntityType for graph role classification
+- TypeHint provides optional format pattern detection
+- Classification is feature-based, not format-based
+- Works across any source: ES, CSV, Kafka, Redis, binary logs
 """
 
 from __future__ import annotations
@@ -21,37 +19,55 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-class EntityType(str, Enum):
-    """Entity classifications discovered from value analysis.
-
-    Known types are labeled semantically. Unknown types use the
-    DISCOVERED_N convention -- the system never discards what it
-    does not understand.
+class FieldClass(str, Enum):
+    """Graph role classification - source-agnostic.
+    
+    Fields are classified by their statistical fingerprint,
+    not by recognizing specific formats. This works across
+    any data source that produces field/value pairs.
     """
-    IP_ADDRESS = "ip_address"
-    HOSTNAME = "hostname"
-    FQDN = "fqdn"
+    ENTITY = "entity"      # Graph node candidate (high cardinality, structured)
+    TEMPORAL = "temporal"  # Timestamp for event ordering
+    METRIC = "metric"      # Numeric measurement (node property)
+    ENUM = "enum"          # Low-cardinality category (node property)
+    TEXT = "text"          # Long descriptive content (context)
+    UNKNOWN = "unknown"    # Doesn't fit patterns (preserved for co-occurrence)
+
+
+class TypeHint(str, Enum):
+    """Optional format hints derived from value patterns.
+    
+    These are HINTS, not classification gates. A field is an ENTITY
+    because of its statistical properties, not because we recognize
+    it as an IP address. The hint helps with display and filtering.
+    """
+    IPV4 = "ipv4"
+    IPV6 = "ipv6"
+    MAC = "mac"
     HASH_MD5 = "hash_md5"
     HASH_SHA1 = "hash_sha1"
     HASH_SHA256 = "hash_sha256"
-    IDENTITY = "identity"
-    TIMESTAMP = "timestamp"
-    PORT = "port"
-    MAC_ADDRESS = "mac_address"
+    HASH = "hash"          # Generic hash (unknown algorithm)
+    UUID = "uuid"
     URL = "url"
-    TECHNIQUE_ID = "technique_id"
-    CATEGORY = "category"
-    NUMERIC = "numeric"
-    TEXT = "text"
-    UNKNOWN = "unknown"
+    FQDN = "fqdn"
+    EMAIL = "email"
+    PATH = "path"          # File/registry path
+    SID = "sid"            # Windows Security Identifier
+    ARN = "arn"            # AWS ARN
+    # Extensible - add hints as patterns are discovered
+    # These do NOT require code changes to classification logic
+
+
+# Legacy alias for backward compatibility during transition
+EntityType = FieldClass
 
 
 class FieldProfile(BaseModel):
     """Everything GRASP knows about a single field in a data source.
-
+    
     Built from unsupervised feature extraction and clustering.
-    The feature_vector is the raw numeric representation used for
-    clustering. The entity_type and cluster_id are the results.
+    Classification is based on statistical fingerprint, not format matching.
     """
     field_path: str = Field(
         description="Dot-notation path from document root (e.g. 'data.srcip')"
@@ -66,10 +82,22 @@ class FieldProfile(BaseModel):
     unique_count: int = Field(
         description="Distinct values observed"
     )
-    entity_type: EntityType = Field(
-        default=EntityType.UNKNOWN,
-        description="Classified entity type from cluster labeling"
+    
+    # Simplified classification
+    field_class: FieldClass = Field(
+        default=FieldClass.UNKNOWN,
+        description="Graph role classification (entity, temporal, metric, enum, text, unknown)"
     )
+    type_hint: Optional[TypeHint] = Field(
+        default=None,
+        description="Optional format hint (ipv4, hash, uuid, etc.) - does not affect classification"
+    )
+    is_entity: bool = Field(
+        default=False,
+        description="Whether this field represents a graph-worthy entity"
+    )
+    
+    # Clustering metadata
     confidence: float = Field(
         default=0.0,
         ge=0.0,
@@ -80,6 +108,8 @@ class FieldProfile(BaseModel):
         default=-1,
         description="Cluster assignment from HDBSCAN (-1 = noise/unassigned)"
     )
+    
+    # Feature data
     feature_vector: list[float] = Field(
         default_factory=list,
         description="Numeric feature vector used for clustering"
@@ -90,23 +120,28 @@ class FieldProfile(BaseModel):
         le=1.0,
         description="unique_count / sample_count -- low = categorical, high = identifier"
     )
-    is_entity: bool = Field(
-        default=False,
-        description="Whether this field represents a graph-worthy entity"
-    )
     sample_values: list[str] = Field(
         default_factory=list,
         description="Small sample of values for debugging and profile inspection (max 10)"
     )
+    
+    # Legacy field for backward compatibility
+    @property
+    def entity_type(self) -> FieldClass:
+        """Legacy alias for field_class."""
+        return self.field_class
 
 
 class RelationshipPattern(BaseModel):
     """A discovered co-occurrence pattern between two entity fields.
-
+    
     When two entity-typed fields consistently appear together in events,
     they form a candidate relationship. Mutual information quantifies
-    the strength of co-occurrence. The relationship_type is inferred
-    from the entity types involved.
+    the strength of co-occurrence.
+    
+    NOTE: Relationship type inference is now simpler - we don't try to
+    guess COMMUNICATES_WITH vs AUTHENTICATED_TO from field types. The
+    graph engine or downstream analysis determines relationship semantics.
     """
     source_field: str = Field(
         description="Dot-notation path of the first entity field"
@@ -114,11 +149,19 @@ class RelationshipPattern(BaseModel):
     target_field: str = Field(
         description="Dot-notation path of the second entity field"
     )
-    source_entity_type: EntityType = Field(
-        description="Entity type of the source field"
+    source_class: FieldClass = Field(
+        description="Field class of the source field"
     )
-    target_entity_type: EntityType = Field(
-        description="Entity type of the target field"
+    target_class: FieldClass = Field(
+        description="Field class of the target field"
+    )
+    source_hint: Optional[TypeHint] = Field(
+        default=None,
+        description="Type hint of source field (if detected)"
+    )
+    target_hint: Optional[TypeHint] = Field(
+        default=None,
+        description="Type hint of target field (if detected)"
     )
     mutual_information: float = Field(
         ge=0.0,
@@ -128,35 +171,38 @@ class RelationshipPattern(BaseModel):
         description="Number of events where both fields have non-null values"
     )
     relationship_type: str = Field(
-        default="RELATED_TO",
-        description="Inferred relationship label (e.g. COMMUNICATES_WITH, AUTHENTICATED_TO)"
+        default="CO_OCCURS_WITH",
+        description="Relationship label - defaults to generic, refined by graph engine"
     )
-    confidence: float = Field(
-        default=0.0,
-        ge=0.0,
-        le=1.0,
-        description="Confidence in the inferred relationship type"
-    )
+    
+    # Legacy aliases
+    @property
+    def source_entity_type(self) -> FieldClass:
+        return self.source_class
+    
+    @property
+    def target_entity_type(self) -> FieldClass:
+        return self.target_class
 
 
 class SourceProfile(BaseModel):
     """The complete profile of a discovered data source.
-
+    
     Assembled by the discovery engine from unsupervised analysis of
-    sampled events. Versioned and immutable per revision -- the graph
-    engine references a specific profile revision when processing events.
+    sampled events. Source-agnostic - works for ES, CSV, Kafka, Redis,
+    Pixhawk binaries, or any source the adapter layer can decode.
     """
     source_id: str = Field(
         description="Unique identifier for this source (from env config)"
     )
     source_type: str = Field(
-        description="Transport type: search_index, file, syslog"
+        description="Transport type: search_index, file, syslog, binary"
     )
     endpoint: str = Field(
         default="",
         description="Connection endpoint (sanitized -- no credentials)"
     )
-
+    
     # Discovery results
     fields: list[FieldProfile] = Field(
         default_factory=list,
@@ -166,7 +212,7 @@ class SourceProfile(BaseModel):
         default_factory=list,
         description="Discovered co-occurrence relationships between entity fields"
     )
-
+    
     # Sampling metadata
     sample_size: int = Field(
         default=0,
@@ -180,7 +226,7 @@ class SourceProfile(BaseModel):
         default=None,
         description="Latest event timestamp in sample (if discoverable)"
     )
-
+    
     # Profile lifecycle
     revision: int = Field(
         default=1,
@@ -194,7 +240,7 @@ class SourceProfile(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When this profile revision was produced"
     )
-
+    
     # Operational metadata
     event_fingerprint: str = Field(
         default="",
@@ -204,18 +250,38 @@ class SourceProfile(BaseModel):
         default=None,
         description="Estimated events per second from source"
     )
-
+    
+    # Classification summary
+    @property
+    def entity_count(self) -> int:
+        """Count of fields classified as entities."""
+        return sum(1 for f in self.fields if f.is_entity)
+    
+    @property
+    def classification_summary(self) -> dict[str, int]:
+        """Count of fields by classification."""
+        from collections import Counter
+        return dict(Counter(f.field_class.value for f in self.fields))
+    
     def entity_fields(self) -> list[FieldProfile]:
         """Return only fields classified as entities."""
         return [f for f in self.fields if f.is_entity]
-
+    
     def get_field(self, path: str) -> Optional[FieldProfile]:
         """Look up a field profile by dot-notation path."""
         for f in self.fields:
             if f.field_path == path:
                 return f
         return None
-
+    
+    def fields_by_class(self, fc: FieldClass) -> list[FieldProfile]:
+        """Return fields with a specific classification."""
+        return [f for f in self.fields if f.field_class == fc]
+    
+    def fields_with_hint(self, hint: TypeHint) -> list[FieldProfile]:
+        """Return entity fields with a specific type hint."""
+        return [f for f in self.fields if f.type_hint == hint]
+    
     def relationship_map(self) -> dict[tuple[str, str], RelationshipPattern]:
         """Return relationships indexed by (source_field, target_field) pair."""
         return {

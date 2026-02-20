@@ -1,17 +1,14 @@
-"""Co-occurrence and relationship inference.
+"""Co-occurrence and relationship inference - Simplified Model.
 
 Analyzes which entity-typed fields appear together in events and
 quantifies the strength of co-occurrence using mutual information.
 Strong co-occurrence between entity fields implies a relationship
 in the graph.
 
-For example: if a source IP field and destination IP field both have
-non-null values in 95% of events, that is a strong co-occurrence
-indicating a network communication relationship.
-
-Relationship types are inferred from the entity type pairs involved,
-not from field names. IP + IP = COMMUNICATES_WITH, regardless of
-whether the fields are named "srcip"/"dstip" or "agent.ip"/"target.ip".
+SIMPLIFIED APPROACH:
+- All entity pairs default to CO_OCCURS_WITH relationship
+- Type hints can refine relationship labels but don't gate detection
+- Relationship semantics determined by graph engine, not discovery
 """
 
 from __future__ import annotations
@@ -19,36 +16,33 @@ from __future__ import annotations
 import logging
 import math
 from itertools import combinations
-from typing import Any
+from typing import Any, Optional
 
 from grasp.discovery.clustering import ClusterResult
 from grasp.discovery.features import flatten_event
-from grasp.models.source_profile import EntityType, RelationshipPattern
+from grasp.models.source_profile import (
+    FieldClass,
+    TypeHint,
+    RelationshipPattern,
+)
 
 logger = logging.getLogger("grasp.discovery.relationships")
 
-# Relationship type inference from entity type pairs.
-# Order-independent: sorted tuple of entity types -> relationship type.
-RELATIONSHIP_TYPE_MAP: dict[tuple[EntityType, ...], str] = {
-    (EntityType.IP_ADDRESS, EntityType.IP_ADDRESS): "COMMUNICATES_WITH",
-    (EntityType.IDENTITY, EntityType.IP_ADDRESS): "AUTHENTICATED_FROM",
-    (EntityType.IDENTITY, EntityType.HOSTNAME): "SESSION_ON",
-    (EntityType.IDENTITY, EntityType.FQDN): "SESSION_ON",
-    (EntityType.HASH_MD5, EntityType.HOSTNAME): "OBSERVED_ON",
-    (EntityType.HASH_SHA1, EntityType.HOSTNAME): "OBSERVED_ON",
-    (EntityType.HASH_SHA256, EntityType.HOSTNAME): "OBSERVED_ON",
-    (EntityType.HASH_MD5, EntityType.IP_ADDRESS): "OBSERVED_ON",
-    (EntityType.HASH_SHA1, EntityType.IP_ADDRESS): "OBSERVED_ON",
-    (EntityType.HASH_SHA256, EntityType.IP_ADDRESS): "OBSERVED_ON",
-    (EntityType.IP_ADDRESS, EntityType.TECHNIQUE_ID): "TECHNIQUE_APPLIED",
-    (EntityType.HOSTNAME, EntityType.TECHNIQUE_ID): "TECHNIQUE_APPLIED",
-    (EntityType.FQDN, EntityType.TECHNIQUE_ID): "TECHNIQUE_APPLIED",
-    (EntityType.IDENTITY, EntityType.TECHNIQUE_ID): "TECHNIQUE_USED_BY",
-    (EntityType.IP_ADDRESS, EntityType.PORT): "CONNECTS_ON",
-    (EntityType.IP_ADDRESS, EntityType.HOSTNAME): "RESOLVES_TO",
-    (EntityType.IP_ADDRESS, EntityType.FQDN): "RESOLVES_TO",
-    (EntityType.IP_ADDRESS, EntityType.URL): "HOSTS",
-    (EntityType.HOSTNAME, EntityType.PORT): "LISTENS_ON",
+
+# Relationship type inference from type hint pairs.
+# Optional refinement - most relationships will be CO_OCCURS_WITH
+HINT_RELATIONSHIP_MAP: dict[tuple[Optional[TypeHint], Optional[TypeHint]], str] = {
+    (TypeHint.IPV4, TypeHint.IPV4): "COMMUNICATES_WITH",
+    (TypeHint.IPV6, TypeHint.IPV6): "COMMUNICATES_WITH",
+    (TypeHint.IPV4, TypeHint.IPV6): "COMMUNICATES_WITH",
+    (TypeHint.IPV4, TypeHint.FQDN): "RESOLVES_TO",
+    (TypeHint.IPV6, TypeHint.FQDN): "RESOLVES_TO",
+    (TypeHint.HASH_MD5, TypeHint.FQDN): "OBSERVED_ON",
+    (TypeHint.HASH_SHA1, TypeHint.FQDN): "OBSERVED_ON",
+    (TypeHint.HASH_SHA256, TypeHint.FQDN): "OBSERVED_ON",
+    (TypeHint.HASH, TypeHint.FQDN): "OBSERVED_ON",
+    (TypeHint.IPV4, TypeHint.URL): "HOSTS",
+    (TypeHint.IPV6, TypeHint.URL): "HOSTS",
 }
 
 
@@ -79,7 +73,11 @@ def analyze_co_occurrence(
         return []
 
     entity_paths = [ef.field_path for ef in entity_fields]
-    entity_type_map = {ef.field_path: ef.entity_type for ef in entity_fields}
+    # Map field_path to (field_class, type_hint)
+    field_info_map = {
+        ef.field_path: (ef.field_class, ef.type_hint)
+        for ef in entity_fields
+    }
 
     # Build presence matrix: for each event, which entity fields are present
     n_events = len(payloads)
@@ -107,10 +105,12 @@ def analyze_co_occurrence(
         if mi < mi_threshold or co_count == 0:
             continue
 
-        # Infer relationship type from entity types
-        type_a = entity_type_map[path_a]
-        type_b = entity_type_map[path_b]
-        rel_type = _infer_relationship_type(type_a, type_b)
+        # Get field info
+        class_a, hint_a = field_info_map[path_a]
+        class_b, hint_b = field_info_map[path_b]
+
+        # Infer relationship type from type hints (optional refinement)
+        rel_type = _infer_relationship_type(hint_a, hint_b)
 
         # Confidence based on MI and co-occurrence rate
         co_rate = co_count / n_events if n_events > 0 else 0.0
@@ -119,12 +119,13 @@ def analyze_co_occurrence(
         relationships.append(RelationshipPattern(
             source_field=path_a,
             target_field=path_b,
-            source_entity_type=type_a,
-            target_entity_type=type_b,
+            source_class=class_a,
+            target_class=class_b,
+            source_hint=hint_a,
+            target_hint=hint_b,
             mutual_information=round(mi, 4),
             co_occurrence_count=co_count,
             relationship_type=rel_type,
-            confidence=round(confidence, 4),
         ))
 
     # Sort by MI descending
@@ -178,13 +179,30 @@ def _mutual_information(
 
 
 def _infer_relationship_type(
-    type_a: EntityType, type_b: EntityType
+    hint_a: Optional[TypeHint],
+    hint_b: Optional[TypeHint],
 ) -> str:
-    """Infer a relationship label from two entity types.
+    """Infer a relationship label from two type hints.
 
-    Uses the RELATIONSHIP_TYPE_MAP for known pairs. Falls back to
-    RELATED_TO for unknown combinations -- the relationship still
+    Uses the HINT_RELATIONSHIP_MAP for known hint pairs. Falls back to
+    CO_OCCURS_WITH for unknown combinations -- the relationship still
     exists, we just cannot label it specifically.
+
+    The graph engine or downstream analysis can refine these labels
+    based on additional context.
     """
-    key = tuple(sorted([type_a, type_b]))
-    return RELATIONSHIP_TYPE_MAP.get(key, "RELATED_TO")
+    if hint_a is None or hint_b is None:
+        return "CO_OCCURS_WITH"
+
+    # Try both orderings
+    key = tuple(sorted([hint_a, hint_b], key=lambda h: h.value if h else ""))
+    if key in HINT_RELATIONSHIP_MAP:
+        return HINT_RELATIONSHIP_MAP[key]
+
+    # Try explicit ordering
+    if (hint_a, hint_b) in HINT_RELATIONSHIP_MAP:
+        return HINT_RELATIONSHIP_MAP[(hint_a, hint_b)]
+    if (hint_b, hint_a) in HINT_RELATIONSHIP_MAP:
+        return HINT_RELATIONSHIP_MAP[(hint_b, hint_a)]
+
+    return "CO_OCCURS_WITH"
