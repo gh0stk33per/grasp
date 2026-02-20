@@ -468,6 +468,21 @@ def _validate_field_type(
         EntityType.MAC_ADDRESS, EntityType.URL,
     )
 
+# =============================================================
+# PATCH for src/grasp/discovery/clustering.py
+# Target function: _classify_from_values
+#
+# Run 12 changes vs run 11:
+#   - Low-cardinality enum gate now exempts values that contain
+#     dashes (hostname-like) or backslashes (domain\user)
+#   - Identity check lowered back to n_unique > 1 but with
+#     stronger structural guards against enumerations
+#   - Added ALL_LOWERCASE single-word gate for enumerations
+#     like 'permission', 'mtime', 'size', 'check', 'amd64'
+#
+# Apply: Replace the entire _classify_from_values function
+# =============================================================
+
 
 def _classify_from_values(samples: list[str]) -> tuple[EntityType, bool]:
     """Classify a field purely from its sample values.
@@ -521,7 +536,6 @@ def _classify_from_values(samples: list[str]) -> tuple[EntityType, bool]:
             return False
 
     if _validate_samples(samples, is_numeric, 0.8):
-        # Check if port range with well-known port indicators
         try:
             vals = [int(s) for s in samples if s.lstrip("-").isdigit()]
             if vals:
@@ -535,57 +549,304 @@ def _classify_from_values(samples: list[str]) -> tuple[EntityType, bool]:
             pass
         return EntityType.NUMERIC, False
 
-    # Category: low cardinality short strings -- catches labels, modes, statuses, booleans
+    # --- String classification: category vs identity vs hostname ---
+
     unique_ratio = len(set(samples)) / max(len(samples), 1)
     n_unique = len(set(samples))
     avg_len = sum(len(s) for s in samples) / max(len(samples), 1)
-    has_alpha = sum(1 for s in samples if any(c.isalpha() for c in s)) / max(len(samples), 1)
+    has_alpha = sum(
+        1 for s in samples if any(c.isalpha() for c in s)
+    ) / max(len(samples), 1)
 
+    # Very low cardinality -> CATEGORY
     if n_unique <= 3 and len(samples) >= 3:
         return EntityType.CATEGORY, False
 
-    # Compliance codes: contain dots/dashes with mixed alpha-numeric segments
-    # Values like CC6.8, AU.14, 164.312.b, A.10.1.1, SI.7
+    # Hex status codes (0x...)
+    hex_status = sum(
+        1 for s in samples
+        if s.startswith("0x") or s.startswith("0X")
+    )
+    if hex_status > len(samples) * 0.5:
+        return EntityType.CATEGORY, False
+
+    # Windows permission constants (ALL_CAPS_UNDERSCORE)
+    upper_underscore = sum(
+        1 for s in samples
+        if "_" in s and s == s.upper() and any(c.isalpha() for c in s)
+    )
+    if upper_underscore > len(samples) * 0.5:
+        return EntityType.CATEGORY, False
+
+    # Compliance codes (CC6.8, AU.14, 164.312.b)
     compliance_pattern = re.compile(r"^[A-Z]{1,4}[\.\-]\d|^\d+\.\d+")
-    compliance_matches = sum(1 for s in samples if compliance_pattern.match(s))
+    compliance_matches = sum(
+        1 for s in samples if compliance_pattern.match(s)
+    )
     if compliance_matches > len(samples) * 0.5:
         return EntityType.CATEGORY, False
 
-    # Identity: short alpha-dominant strings that look like usernames
-    # Values like 'root', 'admin', 'SYSTEM', 'wazuh', 'zettawise1'
-    # NOT: long strings, paths, descriptions, process names
+    # Low-cardinality enumeration
+    # Exempts: values with dashes (hostname-like) or backslashes (domain\user)
+    if n_unique <= 10 and avg_len < 15 and len(samples) >= 5:
+        has_dash = sum(1 for s in samples if "-" in s)
+        has_backslash = sum(1 for s in samples if "\\" in s)
+        if has_dash <= len(samples) * 0.3 and has_backslash <= len(samples) * 0.3:
+            # simple_vals: alphanumeric + underscore ONLY (no dash)
+            # Dash indicates hostnames/usernames, not enumerations
+            simple_vals = sum(
+                1 for s in samples
+                if all(c.isalnum() or c == "_" for c in s)
+            )
+            if simple_vals > len(samples) * 0.8:
+                return EntityType.CATEGORY, False
+
+    # --- Hostname and Identity ---
+
     if avg_len < 30 and has_alpha > 0.5 and n_unique > 1:
-        # Reject if values look like paths (contain / or \)
+        # Reject paths
         path_like = sum(1 for s in samples if "/" in s or "\\" in s)
         if path_like > len(samples) * 0.3:
             return EntityType.UNKNOWN, False
 
-        # Reject if values contain parentheses (enriched fields like 'root(uid=0)')
-        # or are very long descriptive text
-        complex_vals = sum(1 for s in samples if "(" in s or len(s) > 40)
+        # Reject complex values (parentheses, very long)
+        complex_vals = sum(
+            1 for s in samples if "(" in s or len(s) > 40
+        )
         if complex_vals > len(samples) * 0.3:
             return EntityType.UNKNOWN, False
 
-        # Hostname indicators: contains at least one dash or dot, alpha content
-        # Machine names like 'wazuh-aio', 'server01', 'dvwasrv'
+        # Reject space-containing values
+        space_vals = sum(1 for s in samples if " " in s)
+        if space_vals > len(samples) * 0.3:
+            return EntityType.UNKNOWN, False
+
+        # Hostname: dashes + alpha, moderate length
         hostname_like = sum(
             1 for s in samples
             if ("-" in s) and any(c.isalpha() for c in s)
-            and not any(c == "." for c in s)  # FQDNs handled separately
-            and 3 < len(s) < 40
+            and "." not in s
+            and 3 < len(s) < 30
+            and " " not in s
         )
         if hostname_like > len(samples) * 0.3:
+            digit_glued = sum(
+                1 for s in samples
+                if re.search(r"[a-z]\d", s) and "-" not in s
+            )
+            if digit_glued > len(samples) * 0.5:
+                return EntityType.UNKNOWN, False
             return EntityType.HOSTNAME, True
 
-        # Identity: short, alpha-dominant, no special patterns
-        # Must have reasonable cardinality (not 1 unique = constant, not too many)
-        if 1 < n_unique <= 50 and avg_len < 20 and has_alpha > 0.7:
-            # Final sanity: values should not contain dots (compliance codes)
-            dot_vals = sum(1 for s in samples if "." in s)
-            if dot_vals < len(samples) * 0.3:
+        # Identity classification
+        dot_vals = sum(1 for s in samples if "." in s)
+        if dot_vals >= len(samples) * 0.3:
+            return EntityType.UNKNOWN, False
+
+        if avg_len < 20 and has_alpha > 0.7:
+            # All-lowercase simple word detection
+            all_lower_simple = sum(
+                1 for s in samples
+                if s == s.lower()
+                and all(c.isalnum() or c in "_" for c in s)
+                and " " not in s
+            )
+
+            if n_unique > 10:
+                if all_lower_simple > len(samples) * 0.9:
+                    return EntityType.CATEGORY, False
                 return EntityType.IDENTITY, True
 
+            if 1 < n_unique <= 10:
+                if all_lower_simple > len(samples) * 0.8:
+                    return EntityType.CATEGORY, False
+
+                # Identity evidence signals
+                has_upper_only = sum(
+                    1 for s in samples
+                    if s == s.upper() and len(s) > 1
+                    and any(c.isalpha() for c in s)
+                )
+                has_mixed_case = sum(
+                    1 for s in samples
+                    if any(c.isupper() for c in s)
+                    and any(c.islower() for c in s)
+                )
+                has_alnum_mix = sum(
+                    1 for s in samples
+                    if any(c.isdigit() for c in s)
+                    and any(c.isalpha() for c in s)
+                )
+                has_backslash = sum(1 for s in samples if "\\" in s)
+                has_dash = sum(1 for s in samples if "-" in s)
+
+                identity_evidence = (
+                    has_upper_only + has_mixed_case
+                    + has_alnum_mix + has_backslash + has_dash
+                )
+                if identity_evidence > len(samples) * 0.2:
+                    return EntityType.IDENTITY, True
+
     return EntityType.UNKNOWN, False
+
+
+def _validate_field_type(
+    samples: list[str],
+    assigned_type: EntityType,
+) -> tuple[EntityType, bool]:
+    """Validate a single field's assigned type against its sample values.
+
+    Returns the corrected (or confirmed) type and entity flag.
+    """
+    # --- Validate IP assignments ---
+    if assigned_type == EntityType.IP_ADDRESS:
+        if not _validate_samples(samples, _is_valid_ipv4, 0.95):
+            return _classify_from_values(samples)
+
+    # --- Validate port assignments ---
+    if assigned_type == EntityType.PORT:
+        def is_port(s):
+            try:
+                v = int(s)
+                return 0 <= v <= 65535
+            except (ValueError, OverflowError):
+                return False
+
+        if not _validate_samples(samples, is_port, 0.8):
+            return _classify_from_values(samples)
+
+        try:
+            vals = [int(s) for s in samples if s.lstrip("-").isdigit()]
+            if vals:
+                has_low_port = any(v <= 1024 for v in vals)
+                common_high = {3306, 3389, 5432, 5900, 8080, 8443, 8888, 9200, 9300}
+                has_common = any(v in common_high for v in vals)
+                if not has_low_port and not has_common:
+                    return EntityType.NUMERIC, False
+        except (ValueError, OverflowError):
+            pass
+
+    # --- Validate hash assignments ---
+    if assigned_type in (
+        EntityType.HASH_MD5, EntityType.HASH_SHA1, EntityType.HASH_SHA256
+    ):
+        if not _validate_samples(
+            samples, lambda s: bool(RE_HEX.match(s)), 0.8
+        ):
+            return _classify_from_values(samples)
+        lengths = [len(s) for s in samples if RE_HEX.match(s)]
+        if lengths:
+            dominant = max(set(lengths), key=lengths.count)
+            if dominant == 32:
+                return EntityType.HASH_MD5, True
+            elif dominant == 40:
+                return EntityType.HASH_SHA1, True
+            elif dominant == 64:
+                return EntityType.HASH_SHA256, True
+
+    # --- Validate technique ID assignments ---
+    if assigned_type == EntityType.TECHNIQUE_ID:
+        if not _validate_samples(
+            samples, lambda s: bool(RE_TECHNIQUE.match(s)), 0.5
+        ):
+            return _classify_from_values(samples)
+
+    # --- Validate FQDN assignments ---
+    if assigned_type == EntityType.FQDN:
+        if not _validate_samples(
+            samples, lambda s: bool(RE_FQDN.match(s)), 0.5
+        ):
+            return _classify_from_values(samples)
+
+    # --- Validate IDENTITY assignments ---
+    # Cluster-level IDENTITY can be wrong for fields that are actually
+    # enumerations. Check for patterns that indicate category, not identity.
+    if assigned_type == EntityType.IDENTITY:
+        # Hex status codes -> CATEGORY
+        hex_status = sum(
+            1 for s in samples
+            if s.startswith("0x") or s.startswith("0X")
+        )
+        if hex_status > len(samples) * 0.5:
+            return EntityType.CATEGORY, False
+
+        # ALL_CAPS_UNDERSCORE constants -> CATEGORY
+        upper_underscore = sum(
+            1 for s in samples
+            if "_" in s and s == s.upper()
+            and any(c.isalpha() for c in s)
+        )
+        if upper_underscore > len(samples) * 0.5:
+            return EntityType.CATEGORY, False
+
+        # All-lowercase simple single-word tokens -> CATEGORY
+        # Catches: amd64, x86_64, realtime, whodata, permission, etc.
+        n_unique = len(set(samples))
+        if n_unique <= 10:
+            all_lower_simple = sum(
+                1 for s in samples
+                if s == s.lower()
+                and all(c.isalnum() or c in "_" for c in s)
+                and " " not in s
+            )
+            if all_lower_simple > len(samples) * 0.8:
+                # Check for identity-saving evidence before demoting
+                has_dash = sum(1 for s in samples if "-" in s)
+                has_backslash = sum(1 for s in samples if "\\" in s)
+                has_upper_only = sum(
+                    1 for s in samples
+                    if s == s.upper() and len(s) > 1
+                    and any(c.isalpha() for c in s)
+                )
+                has_alnum_mix = sum(
+                    1 for s in samples
+                    if any(c.isdigit() for c in s)
+                    and any(c.isalpha() for c in s)
+                )
+                evidence = (
+                    has_dash + has_backslash + has_upper_only + has_alnum_mix
+                )
+                if evidence <= len(samples) * 0.2:
+                    return EntityType.CATEGORY, False
+
+        # Title-case single words with very low cardinality -> CATEGORY
+        # Catches: Kerberos, NTLM, Negotiate (auth package names)
+        # These are protocol/method enumerations, not person identities
+        if n_unique <= 5 and len(samples) >= 5:
+            avg_len = sum(len(s) for s in samples) / max(len(samples), 1)
+            if avg_len < 12:
+                single_word = sum(
+                    1 for s in samples
+                    if " " not in s and "-" not in s
+                    and "\\" not in s and "/" not in s
+                )
+                if single_word > len(samples) * 0.9:
+                    # No structural identity evidence -> CATEGORY
+                    has_dash = sum(1 for s in samples if "-" in s)
+                    has_backslash = sum(1 for s in samples if "\\" in s)
+                    if has_dash == 0 and has_backslash == 0:
+                        return EntityType.CATEGORY, False
+
+    # --- Validate HOSTNAME assignments ---
+    # Cluster-level HOSTNAME can be wrong for mixed-content fields
+    if assigned_type == EntityType.HOSTNAME:
+        # Reject if values contain spaces (not hostnames)
+        space_vals = sum(1 for s in samples if " " in s)
+        if space_vals > len(samples) * 0.3:
+            return _classify_from_values(samples)
+
+        # Reject if average length > 30 (provider names, descriptions)
+        avg_len = sum(len(s) for s in samples) / max(len(samples), 1)
+        if avg_len > 30:
+            return _classify_from_values(samples)
+
+    # Default: confirm the assignment
+    return assigned_type, assigned_type in (
+        EntityType.IP_ADDRESS, EntityType.HOSTNAME, EntityType.FQDN,
+        EntityType.HASH_MD5, EntityType.HASH_SHA1, EntityType.HASH_SHA256,
+        EntityType.IDENTITY, EntityType.TECHNIQUE_ID, EntityType.PORT,
+        EntityType.MAC_ADDRESS, EntityType.URL,
+    )
 
 
 def _validate_and_classify(feat: FieldFeatures) -> ClusterResult:
