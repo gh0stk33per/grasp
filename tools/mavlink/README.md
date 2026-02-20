@@ -1,0 +1,1 @@
+# Folder to store mavlink BIN folder, part of .gitignore
