@@ -32,6 +32,7 @@ from sklearn.preprocessing import StandardScaler
 
 from grasp.discovery.features import FEATURE_NAMES, FieldFeatures
 from grasp.models.source_profile import FieldClass, TypeHint
+# from grasp.classifier.random_forest import SourceClassifier
 
 logger = logging.getLogger("grasp.discovery.clustering")
 
@@ -129,7 +130,7 @@ class ClusteringOutput:
 # Core classification logic - FEATURE-BASED, not pattern-based
 # ---------------------------------------------------------------------------
 
-def _classify_from_features(
+def _heuristic_classify(
     feat: FieldFeatures,
     centroid: Optional[dict[str, float]] = None,
 ) -> tuple[str, bool]:
@@ -239,12 +240,45 @@ def _classify_from_features(
     # --- UNKNOWN: Doesn't fit patterns ---
     return FieldClass.UNKNOWN, False
 
+# ---------------------------------------------------------------------------
+# Per-source classifier cache
+# ---------------------------------------------------------------------------
+_clf_cache: dict[str, SourceClassifier] = {}
+
+def load_classifier(source_id: str) -> None:
+    
+    """Load persisted classifier for source_id into the cache.
+    Called once per source at adapter startup. If no persisted model
+    exists the source runs on heuristic until a model is trained.
+    Args:
+            source_id: Source identifier matching the classifier filename.
+    """
+    
+    from grasp.classifier.random_forest import SourceClassifier
+    clf = SourceClassifier(source_id=source_id)
+    clf.load()  # no-op and logs if cold start
+    _clf_cache[source_id] = clf
+    logger.info(
+        "Classifier loaded for source=%s status=%s",
+        source_id, clf.stats()["model_status"],
+    )
+
+def register_classifier(source_id: str, clf: SourceClassifier) -> None:
+    """Register a trained classifier directly (used by retrain CLI).
+
+        Args:
+        source_id: Source identifier.
+        clf:       Trained SourceClassifier instance.
+    """
+  
+    _clf_cache[source_id] = clf
+    logger.info("Classifier registered for source=%s", source_id)
 
 # ---------------------------------------------------------------------------
 # Main clustering pipeline
 # ---------------------------------------------------------------------------
 
-def cluster_fields(features: list[FieldFeatures]) -> ClusteringOutput:
+def cluster_fields(features: list[FieldFeatures], source_id: Optional[str] = None, ) -> ClusteringOutput:
     """Cluster fields by their feature vectors using HDBSCAN.
     
     Simplified pipeline:
@@ -269,7 +303,7 @@ def cluster_fields(features: list[FieldFeatures]) -> ClusteringOutput:
     if n_fields < 5:
         results = []
         for feat in features:
-            fc, is_ent = _classify_from_features(feat)
+            fc, is_ent = _heuristic_classify(feat)
             hint = _detect_type_hint(feat.sample_values) if is_ent else None
             results.append(ClusterResult(
                 field_path=feat.field_path,
@@ -315,8 +349,22 @@ def cluster_fields(features: list[FieldFeatures]) -> ClusteringOutput:
         cid = int(labels[i])
         prob = float(probabilities[i])
         
-        # Classify based on features
-        fc, is_ent = _classify_from_features(feat)
+        # Classifier integration -- per-source model with heuristic fallback
+        clf_result = None
+        if source_id is not None and _clf_cache.get(source_id) is not None:
+            clf_result = _clf_cache[source_id].predict(feat)
+
+        if clf_result is not None and not clf_result.flagged:
+            fc = clf_result.field_class
+            is_ent = clf_result.is_entity
+            prob = clf_result.confidence
+        else:
+            # Permanent heuristic fallback:
+            #   - cold start (no model loaded)
+            #   - below confidence threshold (flagged)
+            #   - source_id not provided
+            fc, is_ent = _heuristic_classify(feat)
+            prob = 0.5
         
         # Detect type hint for entities
         hint = None

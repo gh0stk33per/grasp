@@ -16,6 +16,10 @@ services:
       - ./tests:/app/tests:ro
       - ./pytest.ini:/app/pytest.ini:ro
       - ./root-ca.pem:/app/certs/root-ca.pem:ro
+      # Tools: diagnostic and validation scripts
+      - ./tools:/app/tools
+      # Persistent data: models, feedback, samples
+      - grasp-data:/data
     networks:
       - grasp-net
     restart: unless-stopped
@@ -45,6 +49,8 @@ services:
 
 volumes:
   grasp-neo4j-data:
+    driver: local
+  grasp-data:
     driver: local
 
 networks:

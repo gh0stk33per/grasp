@@ -19,8 +19,10 @@ COPY --from=builder /install /usr/local
 WORKDIR /app
 COPY src/ ./src/
 
-# Ownership
-RUN chown -R grasp:grasp /app
+# Create data directories with correct ownership before switching to non-root.
+# Named volumes mounted over these paths inherit the ownership set here.
+RUN mkdir -p /data/models /data/feedback /data/samples /data/classifier_runs \
+    && chown -R grasp:grasp /app /data
 
 USER grasp
 

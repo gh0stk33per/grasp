@@ -84,6 +84,17 @@ class Settings:
             os.environ.get("GRASP_ATTACK_CHAIN_MIN_CONFIDENCE", "0.70")
         )
 
+        # Classifier Engine
+        self.model_base_path = os.environ.get("GRASP_MODEL_BASE_PATH", "/data/models")
+        self.feedback_base_path = os.environ.get("GRASP_FEEDBACK_BASE_PATH", "/data/feedback")
+        self.samples_base_path = os.environ.get("GRASP_SAMPLES_BASE_PATH", "/data/samples")
+        self.classifier_confidence_threshold = float(
+            os.environ.get("GRASP_CLASSIFIER_CONFIDENCE_THRESHOLD", "0.6")
+        )
+        self.classifier_min_corrections = int(
+            os.environ.get("GRASP_CLASSIFIER_MIN_CORRECTIONS", "10")
+        )
+
         # Discovery Engine
         self.discovery_min_field_values = int(
             os.environ.get("GRASP_DISCOVERY_MIN_FIELD_VALUES", "10")
