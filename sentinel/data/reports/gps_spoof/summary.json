@@ -1,24 +1,33 @@
 {
   "analyzer": "gps_spoof",
-  "total_files": 1,
+  "total_files": 71,
   "verdict_counts": {
-    "CLEAN": 1
+    "CLEAN": 68,
+    "SUSPICIOUS": 1,
+    "ALERT": 2
   },
-  "avg_confidence": 0.375,
-  "alert_files": [],
-  "suspicious_files": [],
+  "avg_confidence": 0.38,
+  "alert_files": [
+    "00000048.BIN",
+    "00000064.BIN"
+  ],
+  "suspicious_files": [
+    "00000010.BIN"
+  ],
   "check_breakdown": {
     "position_jump": {
-      "CLEAN": 1
+      "CLEAN": 71
     },
     "alt_divergence": {
-      "UNKNOWN": 1
+      "UNKNOWN": 71
     },
     "gps_quality": {
-      "CLEAN": 1
+      "CLEAN": 71
     },
     "ekf_innovation": {
-      "CLEAN": 1
+      "CLEAN": 68,
+      "SUSPICIOUS": 1,
+      "ALERT": 2
     }
   }
 }

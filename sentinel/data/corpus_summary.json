@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-02-24T07:11:23.335845",
-  "total_files": 70,
+  "generated_at": "2026-02-24T10:48:39.288791",
+  "total_files": 71,
   "verdict_counts": {
-    "contains_deviations": 70
+    "contains_deviations": 71
   },
   "session_type_counts": {
-    "ground": 66,
+    "ground": 67,
     "flight": 4
   },
   "config_fingerprints": {
@@ -80,7 +80,7 @@
       ]
     },
     "f52d06e3": {
-      "count": 20,
+      "count": 21,
       "files": [
         "00000051.BIN",
         "00000052.BIN",
@@ -101,7 +101,8 @@
         "00000067.BIN",
         "00000068.BIN",
         "00000069.BIN",
-        "00000070.BIN"
+        "00000070.BIN",
+        "00000071.BIN"
       ]
     }
   },
@@ -109,6 +110,6 @@
   "duration_stats": {
     "min_s": 14.5,
     "max_s": 4991.8,
-    "median_s": 203.2
+    "median_s": 174.2
   }
 }
