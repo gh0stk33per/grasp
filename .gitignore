@@ -25,7 +25,7 @@ venv/
 Thumbs.db
 
 # Docker volumes
-data/
+# data/
 
 # ML model artifacts
 models/*.pkl
