@@ -10,7 +10,7 @@
 
 You are starting Session 001 of SENTINEL, a new sub-project inside the GRASP repository at `grasp/sentinel/`. SENTINEL is a sensor integrity and threat detection engine for autonomous vehicles (UAV/UWV) running on constrained hardware (Raspberry Pi 5 sidecar target).
 
-Read `tools/mavlink/investigate.py` from project knowledge before writing any code. That script is the proven DataFlash binary parser that seeds this session's work. Do not rewrite it -- extend it.
+Read `sentinel/tools/investigate.py` from project knowledge before writing any code. That script is the proven DataFlash binary parser that seeds this session's work. Do not rewrite it -- extend it.
 
 ---
 

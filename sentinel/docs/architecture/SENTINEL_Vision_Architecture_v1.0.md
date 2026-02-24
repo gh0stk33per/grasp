@@ -259,7 +259,7 @@ vehicle_profile.bin
 
 SENTINEL lives inside the GRASP repository at `grasp/sentinel/` and uses GRASP's discovery engine during the ground pipeline phase. Specifically:
 
-- GRASP's DataFlash binary parser (`tools/mavlink/investigate.py`) is the seed for the corpus characterisation tool
+- GRASP's DataFlash binary parser (`sentinel/tools/investigate.py`) is the seed for the corpus characterisation tool
 - GRASP's field classification engine identifies sensor roles from statistical behaviour without prior schema knowledge
 - GRASP's co-occurrence analysis identifies cross-sensor correlations that form the consistency rules
 
