@@ -1,0 +1,33 @@
+{
+  "analyzer": "gps_spoof",
+  "total_files": 69,
+  "verdict_counts": {
+    "CLEAN": 66,
+    "SUSPICIOUS": 1,
+    "ALERT": 2
+  },
+  "avg_confidence": 0.38,
+  "alert_files": [
+    "00000048.BIN",
+    "00000064.BIN"
+  ],
+  "suspicious_files": [
+    "00000010.BIN"
+  ],
+  "check_breakdown": {
+    "position_jump": {
+      "CLEAN": 69
+    },
+    "alt_divergence": {
+      "UNKNOWN": 69
+    },
+    "gps_quality": {
+      "CLEAN": 69
+    },
+    "ekf_innovation": {
+      "CLEAN": 66,
+      "SUSPICIOUS": 1,
+      "ALERT": 2
+    }
+  }
+}
